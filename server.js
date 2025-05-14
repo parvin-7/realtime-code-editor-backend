@@ -15,7 +15,7 @@ const io = new Server(server, {
   }
 });
 
-const { ACTIONS } = require('../client/src/Actions');
+// const { ACTIONS } = require('../client/src/Actions');
 
 app.use(express.json());
 app.use(cors());
@@ -55,17 +55,15 @@ app.post('/run', async (req, res) => {
 io.on('connection', (socket) => {
     console.log('Socket connected:', socket.id);
 
-    socket.on(ACTIONS.JOIN, ({ roomId, username }) => {
+    socket.on('join', ({ roomId, username }) => {
         socket.join(roomId);
-        const clients = Array.from(io.sockets.adapter.rooms.get(roomId) || []).map(socketId => {
-            return {
-                socketId,
-                username,
-            };
-        });
+        const clients = Array.from(io.sockets.adapter.rooms.get(roomId) || []).map(socketId => ({
+            socketId,
+            username,
+        }));
 
         clients.forEach(({ socketId }) => {
-            io.to(socketId).emit(ACTIONS.JOINED, {
+            io.to(socketId).emit('joined', {
                 clients,
                 username,
                 socketId: socket.id,
@@ -73,18 +71,18 @@ io.on('connection', (socket) => {
         });
     });
 
-    socket.on(ACTIONS.CODE_CHANGE, ({ roomId, code }) => {
-        socket.in(roomId).emit(ACTIONS.CODE_CHANGE, { code });
+    socket.on('code-change', ({ roomId, code }) => {
+        socket.in(roomId).emit('code-change', { code });
     });
 
-    socket.on(ACTIONS.SYNC_CODE, ({ socketId, code }) => {
-        io.to(socketId).emit(ACTIONS.CODE_CHANGE, { code });
+    socket.on('sync-code', ({ socketId, code }) => {
+        io.to(socketId).emit('code-change', { code });
     });
 
     socket.on('disconnecting', () => {
         const rooms = [...socket.rooms];
         rooms.forEach(roomId => {
-            socket.to(roomId).emit(ACTIONS.DISCONNECTED, {
+            socket.to(roomId).emit('disconnected', {
                 socketId: socket.id,
                 username: "Someone",
             });
