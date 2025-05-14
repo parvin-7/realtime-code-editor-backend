@@ -19,6 +19,9 @@ const io = new Server(server, {
 
 app.use(express.json());
 app.use(cors());
+app.get("/", (req, res) => {
+  res.send("Backend is running.");
+});
 
 // ⚙️ Code Execution Route (Judge0 API)
 const JUDGE0_API_URL = "https://judge0-ce.p.rapidapi.com/submissions";
