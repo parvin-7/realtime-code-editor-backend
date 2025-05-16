@@ -7,7 +7,7 @@ const { Server } = require('socket.io');
 const cors = require('cors');
 const axios = require('axios');
 
-const allowedOrigins = ["https://realtime-code-editor-henna.vercel.app", "http://localhost:3000"];
+const allowedOrigins = ["https://realtime-code-editor-henna.vercel.app", "http://localhost:3000", "https://codistcodeeditor.vercel.app/"];
 
 const io = new Server(server, {
     cors: {
