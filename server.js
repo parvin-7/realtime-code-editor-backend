@@ -1,10 +1,11 @@
+require('dotenv').config();
 const express = require('express');
 const app = express();
 const http = require('http');
 const server = http.createServer(app);
 const { Server } = require('socket.io');
 const cors = require('cors');
-require('dotenv').config();
+const axios = require('axios');
 
 const allowedOrigins = ["https://realtime-code-editor-henna.vercel.app", "http://localhost:3000"];
 
@@ -28,7 +29,6 @@ app.get("/", (req, res) => {
     res.send("Backend is running.");
 });
 
-// ⚙️ Code Execution Route (Judge0 API)
 const JUDGE0_API_URL = "https://judge0-ce.p.rapidapi.com/submissions";
 
 app.post('/run', async (req, res) => {
@@ -59,7 +59,6 @@ app.post('/run', async (req, res) => {
     }
 });
 
-// ⚡ Socket.IO logic
 io.on('connection', (socket) => {
     console.log('Socket connected:', socket.id);
 
@@ -98,6 +97,5 @@ io.on('connection', (socket) => {
     });
 });
 
-// 🟢 Start Server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
