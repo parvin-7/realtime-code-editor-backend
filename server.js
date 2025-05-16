@@ -9,11 +9,6 @@ const axios = require('axios');
 
 const allowedOrigins = ["https://realtime-code-editor-henna.vercel.app", "http://localhost:3000"];
 
-app.use((req, res, next) => {
-    console.log('Incoming request:', req.method, req.url, 'Origin:', req.headers.origin);
-    next();
-});
-
 const io = new Server(server, {
     cors: {
         origin: allowedOrigins,
@@ -27,14 +22,6 @@ app.use(cors({
     methods: ["GET", "POST"],
     credentials: true,
 }));
-
-process.on('uncaughtException', (err) => {
-    console.error('Uncaught Exception:', err);
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-});
 
 app.use(express.json());
 
