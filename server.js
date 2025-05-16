@@ -23,6 +23,14 @@ app.use(cors({
     credentials: true,
 }));
 
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
 app.use(express.json());
 
 app.get("/", (req, res) => {
