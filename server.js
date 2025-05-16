@@ -17,56 +17,62 @@ const io = new Server(server, {
     },
 });
 
+app.use((req, res, next) => {
+    console.log('Incoming request:', req.method, req.url, 'Origin:', req.headers.origin);
+    next();
+});
+
 app.use(cors({
     origin: allowedOrigins,
     methods: ["GET", "POST"],
     credentials: true,
 }));
 
-app.use(express.json());
-
 app.get("/", (req, res) => {
     res.send("Backend is running.");
 });
 
-const JUDGE0_API_URL = "https://judge0-ce.p.rapidapi.com/submissions";
-
-app.post('/run', async (req, res) => {
+app.post('/run', express.json(), async (req, res) => {
     const { language_id, source_code, stdin } = req.body;
     console.log("Backend received:", { language_id, source_code, stdin });
 
     try {
-        const { data } = await axios.post(
-            `${JUDGE0_API_URL}?base64_encoded=false&wait=true`,
-            {
-                language_id,
-                source_code,
-                stdin,
+        const options = {
+            method: 'POST',
+            url: 'https://judge0-ce.p.rapidapi.com/submissions',
+            params: { base64_encoded: 'false', fields: '*', wait: true },
+            headers: {
+                'content-type': 'application/json',
+                'Content-Type': 'application/json',
+                'X-RapidAPI-Key': process.env.RAPID_API_KEY,
+                'X-RapidAPI-Host': 'judge0-ce.p.rapidapi.com'
             },
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-RapidAPI-Key': process.env.RAPID_API_KEY,
-                    'X-RapidAPI-Host': 'judge0-ce.p.rapidapi.com'
-                }
-            }
-        );
+            data: JSON.stringify({
+                language_id: language_id,
+                source_code: source_code,
+                stdin: stdin
+            })
+        };
 
-        res.json(data);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Code execution failed" });
+        const response = await axios.request(options);
+        res.json(response.data);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Execution failed" });
     }
 });
+
+const userSocketMap = new Map();
 
 io.on('connection', (socket) => {
     console.log('Socket connected:', socket.id);
 
     socket.on('join', ({ roomId, username }) => {
+        userSocketMap.set(socket.id, username);
         socket.join(roomId);
         const clients = Array.from(io.sockets.adapter.rooms.get(roomId) || []).map(socketId => ({
             socketId,
-            username,
+            username: userSocketMap.get(socketId),
         }));
 
         clients.forEach(({ socketId }) => {
@@ -79,10 +85,12 @@ io.on('connection', (socket) => {
     });
 
     socket.on('code-change', ({ roomId, code }) => {
-        socket.in(roomId).emit('code-change', { code });
+        console.log('Received CODE_CHANGE:', { roomId, code });
+        socket.to(roomId).emit('code-change', { code });
     });
 
     socket.on('sync-code', ({ socketId, code }) => {
+        console.log('Received SYNC_CODE:', { socketId, code });
         io.to(socketId).emit('code-change', { code });
     });
 
@@ -91,9 +99,10 @@ io.on('connection', (socket) => {
         rooms.forEach(roomId => {
             socket.to(roomId).emit('disconnected', {
                 socketId: socket.id,
-                username: "Someone",
+                username: userSocketMap.get(socket.id) || "Someone",
             });
         });
+        userSocketMap.delete(socket.id);
     });
 });
 
