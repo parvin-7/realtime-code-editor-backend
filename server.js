@@ -1,11 +1,10 @@
-require('dotenv').config();
 const express = require('express');
 const app = express();
 const http = require('http');
 const server = http.createServer(app);
 const { Server } = require('socket.io');
-const cors = require('cors'); // Added import
-const axios = require('axios');
+const cors = require('cors');
+require('dotenv').config();
 
 const allowedOrigins = ["https://realtime-code-editor-henna.vercel.app", "http://localhost:3000"];
 
@@ -17,7 +16,6 @@ const io = new Server(server, {
     },
 });
 
-// 🌐 Express CORS
 app.use(cors({
     origin: allowedOrigins,
     methods: ["GET", "POST"],
