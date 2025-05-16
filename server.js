@@ -7,27 +7,32 @@ const cors = require('cors');
 require("dotenv").config();
 const path = require('path');
 
-// 🛡️ CORS configuration for both Express and Socket.IO
-const FRONTEND_URL = "https://realtime-code-editor-henna.vercel.app";
-
 const server = http.createServer(app);
+
+// 🛡️ Allow both production and local dev origins
+const allowedOrigins = [
+  "https://realtime-code-editor-henna.vercel.app",
+  "http://localhost:3000"
+];
+
+// 💬 Socket.IO CORS setup
 const io = new Server(server, {
   cors: {
-    origin: FRONTEND_URL,
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
     credentials: true,
   },
 });
 
-// ✅ Express middleware
-app.use(express.json());
+// 🌐 Express CORS
 app.use(cors({
-  origin: FRONTEND_URL,
+  origin: allowedOrigins,
   methods: ["GET", "POST"],
   credentials: true,
 }));
 
-// 🔹 Root endpoint
+app.use(express.json());
+
 app.get("/", (req, res) => {
   res.send("Backend is running.");
 });
@@ -101,12 +106,6 @@ io.on('connection', (socket) => {
     });
   });
 });
-
-// ✅ Optional: Serve static frontend files if needed (for full-stack hosting)
-// app.use(express.static(path.join(__dirname, '../client/dist')));
-// app.get('*', (req, res) => {
-//   res.sendFile(path.join(__dirname, '../client/dist/index.html'));
-// });
 
 // 🟢 Start Server
 const PORT = process.env.PORT || 5000;
