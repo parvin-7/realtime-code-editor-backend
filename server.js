@@ -85,12 +85,10 @@ io.on('connection', (socket) => {
     });
 
     socket.on('code-change', ({ roomId, code }) => {
-        console.log('Received CODE_CHANGE:', { roomId, code });
         socket.to(roomId).emit('code-change', { code });
     });
 
     socket.on('sync-code', ({ socketId, code }) => {
-        console.log('Received SYNC_CODE:', { socketId, code });
         io.to(socketId).emit('code-change', { code });
     });
 
