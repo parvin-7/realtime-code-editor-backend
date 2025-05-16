@@ -7,7 +7,7 @@ const { Server } = require('socket.io');
 const cors = require('cors');
 const axios = require('axios');
 
-const allowedOrigins = ["http://localhost:3000","https://codistcodeeditor.netlify.app/"];
+const allowedOrigins = ["http://localhost:3000", "https://codistcodeeditor.vercel.app/","https://codistcodeeditor.netlify.app/"];
 
 const io = new Server(server, {
     cors: {
