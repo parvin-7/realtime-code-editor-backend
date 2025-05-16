@@ -1,23 +1,17 @@
+require('dotenv').config();
 const express = require('express');
 const app = express();
 const http = require('http');
 const server = http.createServer(app);
 const { Server } = require('socket.io');
+const cors = require('cors');
 
-const io = new Server(server, {
-  cors: {
-    origin: ["https://realtime-code-editor-henna.vercel.app", "http://localhost:3000"],
+const allowedOrigins = ["https://realtime-code-editor-henna.vercel.app", "http://localhost:3000"];
+
+app.use(cors({
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
     credentials: true,
-  },
-});
-
-
-// 🌐 Express CORS
-app.use(cors({
-  origin: allowedOrigins,
-  methods: ["GET", "POST"],
-  credentials: true,
 }));
 
 app.use(express.json());
